@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Analysis - Amazon Product Reviews</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>🛍️ Product Review Sentiment Analysis</h1>
+            <p class="subtitle">Analyze the sentiment of Amazon product reviews using AI</p>
+        </header>
+
+        <!-- Main Content -->
+        <main>
+            <!-- Input Section -->
+            <div class="input-section">
+                <h2>Enter Your Review</h2>
+                <textarea 
+                    id="reviewInput" 
+                    placeholder="Type or paste your product review here...&#10;&#10;Example: 'This product exceeded my expectations! The quality is outstanding and it arrived quickly. Highly recommend!'"
+                    rows="6"
+                ></textarea>
+                
+                <button id="analyzeBtn" onclick="analyzeSentiment()">
+                    <span id="btnText">🔍 Analyze Sentiment</span>
+                    <span id="btnLoader" style="display: none;">⏳ Analyzing...</span>
+                </button>
+            </div>
+
+            <!-- Result Section -->
+            <div id="resultSection" class="result-section" style="display: none;">
+                <h2>Analysis Result</h2>
+                
+                <div id="resultCard" class="result-card">
+                    <div class="sentiment-badge" id="sentimentBadge">
+                        <span id="sentimentEmoji"></span>
+                        <span id="sentimentText"></span>
+                    </div>
+                    
+                    <div class="confidence-section">
+                        <p class="confidence-label">Confidence Level</p>
+                        <div class="confidence-bar-container">
+                            <div id="confidenceBar" class="confidence-bar"></div>
+                        </div>
+                        <p id="confidenceText" class="confidence-text"></p>
+                    </div>
+                    
+                    <div class="details-section">
+                        <p><strong>Raw Prediction Score:</strong> <span id="rawScore"></span></p>
+                        <p class="info-text">
+                            <small>
+                                Score closer to 1.0 = More Positive | Score closer to 0.0 = More Negative
+                            </small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Section -->
+            <div id="errorSection" class="error-section" style="display: none;">
+                <p id="errorMessage"></p>
+            </div>
+
+            <!-- Examples Section -->
+            <div class="examples-section">
+                <h3>Try These Examples:</h3>
+                <div class="example-buttons">
+                    <button class="example-btn" onclick="fillExample(0)">
+                        😊 Positive Example
+                    </button>
+                    <button class="example-btn" onclick="fillExample(1)">
+                        😞 Negative Example
+                    </button>
+                    <button class="example-btn" onclick="fillExample(2)">
+                        😐 Neutral Example
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer>
+            <p>ISY503 Intelligent Systems - Assessment 3</p>
+            <p>Team: [Your Team Name] | Torrens University Australia</p>
+        </footer>
+    </div>
+
+    <script>
+        // Example reviews
+        const examples = [
+            "This product is absolutely amazing! The quality exceeded my expectations and it arrived quickly. I've been using it daily and couldn't be happier. Highly recommend to anyone looking for a reliable product!",
+            "Terrible experience. The product broke after just one week of use. Customer service was unhelpful and refused to provide a refund. Complete waste of money. Do not buy this product!",
+            "It's okay, nothing special. Does what it's supposed to do but there are probably better options available for the same price. Shipping was average."
+        ];
+
+        // Fill example review
+        function fillExample(index) {
+            document.getElementById('reviewInput').value = examples[index];
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('errorSection').style.display = 'none';
+        }
+
+        // Analyze sentiment
+        async function analyzeSentiment() {
+            const reviewText = document.getElementById('reviewInput').value.trim();
+            
+            // Validate input
+            if (!reviewText) {
+                showError('Please enter a review to analyze');
+                return;
+            }
+
+            // Show loading state
+            document.getElementById('btnText').style.display = 'none';
+            document.getElementById('btnLoader').style.display = 'inline';
+            document.getElementById('analyzeBtn').disabled = true;
+            
+            // Hide previous results/errors
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('errorSection').style.display = 'none';
+
+            try {
+                // Make API call
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ review: reviewText })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Show result
+                    displayResult(data);
+                } else {
+                    // Show error
+                    showError(data.error || 'An error occurred during analysis');
+                }
+            } catch (error) {
+                showError('Failed to connect to the server. Please try again.');
+                console.error('Error:', error);
+            } finally {
+                // Reset button state
+                document.getElementById('btnText').style.display = 'inline';
+                document.getElementById('btnLoader').style.display = 'none';
+                document.getElementById('analyzeBtn').disabled = false;
+            }
+        }
+
+        // Display result
+        function displayResult(data) {
+            const resultSection = document.getElementById('resultSection');
+            const resultCard = document.getElementById('resultCard');
+            
+            // Set sentiment
+            const sentimentEmoji = document.getElementById('sentimentEmoji');
+            const sentimentText = document.getElementById('sentimentText');
+            const sentimentBadge = document.getElementById('sentimentBadge');
+            
+            if (data.sentiment === 'Positive') {
+                sentimentEmoji.textContent = '😊';
+                sentimentText.textContent = 'Positive Review';
+                sentimentBadge.className = 'sentiment-badge positive';
+            } else {
+                sentimentEmoji.textContent = '😞';
+                sentimentText.textContent = 'Negative Review';
+                sentimentBadge.className = 'sentiment-badge negative';
+            }
+
+            // Set confidence
+            const confidenceBar = document.getElementById('confidenceBar');
+            const confidenceText = document.getElementById('confidenceText');
+            confidenceBar.style.width = data.confidence + '%';
+            confidenceText.textContent = data.confidence.toFixed(2) + '%';
+            
+            // Color confidence bar based on level
+            if (data.confidence >= 80) {
+                confidenceBar.style.backgroundColor = '#4caf50';
+            } else if (data.confidence >= 60) {
+                confidenceBar.style.backgroundColor = '#ff9800';
+            } else {
+                confidenceBar.style.backgroundColor = '#f44336';
+            }
+
+            // Set raw score
+            document.getElementById('rawScore').textContent = data.raw_prediction.toFixed(4);
+
+            // Show result section
+            resultSection.style.display = 'block';
+            
+            // Smooth scroll to result
+            resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Show error
+        function showError(message) {
+            const errorSection = document.getElementById('errorSection');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            errorMessage.textContent = '❌ ' + message;
+            errorSection.style.display = 'block';
+            
+            // Smooth scroll to error
+            errorSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Allow Enter key to submit (with Shift+Enter for new line)
+        document.getElementById('reviewInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                analyzeSentiment();
+            }
+        });
+    </script>
+</body>
+</html>
