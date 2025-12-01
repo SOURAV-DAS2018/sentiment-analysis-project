@@ -1,13 +1,13 @@
 """
-Complete Training Pipeline - ULTIMATE VERSION
-Author: [Your Team Name]
-Date: November 2024
+Complete Training Pipeline 
+Group 10
+
 
 This version includes ALL improvements:
 - Uses ALL 4 product categories (Books, DVD, Electronics, Kitchen)
 - Optimized model architecture
 - Better training settings
-- Expected accuracy: 82-88%
+- Expected accuracy: 80-88%
 """
 
 import os
@@ -366,12 +366,7 @@ def main():
     print(f"Preprocessor saved to: {CONFIG['models_dir']}/preprocessor.pkl")
     print(f"\n🏆 Final Test Accuracy: {accuracy:.2%}")
     
-    if accuracy >= 0.85:
-        print("🌟 HIGH DISTINCTION LEVEL! 🌟")
-    elif accuracy >= 0.75:
-        print("⭐ DISTINCTION LEVEL! ⭐")
-    elif accuracy >= 0.65:
-        print("✅ CREDIT LEVEL! ✅")
+   
     
     print("="*70)
 
