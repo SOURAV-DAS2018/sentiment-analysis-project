@@ -4,8 +4,8 @@
 This project implements a Neural Network-based sentiment analysis system that classifies Amazon product reviews as either positive or negative.
 
 ## Team Members
-- [Your Name] - [Student ID]
-- [Team Member 2] - [Student ID]
+- [Sourav Das] - [A00180905]
+- [Mustakim Ismael Akayo] - [Student ID]
 - [Team Member 3] - [Student ID]
 - [Team Member 4] - [Student ID]
 
