@@ -1,7 +1,7 @@
 # Ethical Considerations in Sentiment Analysis
 **ISY503 Intelligent Systems - Assessment 3**  
-**Team: [Your Team Name]**  
-**Date: November 2024**
+**Team: [Group 10]**  
+**Date: December 2025**
 
 ---
 
